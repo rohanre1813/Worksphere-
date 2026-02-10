@@ -54,8 +54,8 @@ export default function EmployeeAnnouncements() {
           <div className="flex items-center gap-3">
             <Bell size={28} className="text-yellow-500" />
             <div>
-              <h1 className="text-xl md:text-2xl font-semibold">Announcements</h1>
-              <p className="text-sm text-black">Latest updates from your administrator</p>
+              <h1 className="text-xl md:text-2xl font-semibold text-gray-400  ">Announcements</h1>
+              <p className="text-sm text-gray-400">Latest updates from your administrator</p>
             </div>
           </div>
         </div>
