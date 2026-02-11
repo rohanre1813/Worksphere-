@@ -77,7 +77,7 @@ export default function initSocket(io) {
         if (targetZone !== "in" && targetZone !== "out") {
 
           // REJECT: If they are NOT "In" (either "Out" or have no zone)
-          if (currentZoneStatus !== "in") {
+          if (currentZoneStatus === "out" || currentZoneStatus === "not inside any zone") {
             console.log(`❌ Scan Blocked: ${emp.name} must scan IN first.`);
 
             // Send specific error event back to sender socket
