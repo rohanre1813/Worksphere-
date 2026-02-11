@@ -66,7 +66,7 @@ export default function AnnouncementPage() {
         <div className="bg-white/40 dark:bg-zinc-900/60 backdrop-blur-lg border border-white/30 dark:border-white/10 rounded-2xl shadow-xl p-4 sm:p-6">
           <div className="flex items-center gap-2 mb-4">
             <Megaphone size={20} className="text-gray-300" />
-            <h1 className="text-xl md:text-2xl font-semibold">
+            <h1 className="text-xl md:text-2xl font-semibold text-gray-400">
               New Announcement
             </h1>
           </div>
