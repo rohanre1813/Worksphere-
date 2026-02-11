@@ -126,7 +126,7 @@ function EditModal({ admin, setAdmin, onClose }) {
     const token = localStorage.getItem("token");
 
     try {
-      const res = await axios.put("http://localhost:5000/api/admin/me", form, {
+      const res = await axios.put(`${API_BASE_URL}/api/admin/me`, form, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
