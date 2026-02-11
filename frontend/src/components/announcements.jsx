@@ -65,7 +65,7 @@ export default function AnnouncementPage() {
         {/* ADD ANNOUNCEMENT */}
         <div className="bg-white/40 dark:bg-zinc-900/60 backdrop-blur-lg border border-white/30 dark:border-white/10 rounded-2xl shadow-xl p-4 sm:p-6">
           <div className="flex items-center gap-2 mb-4">
-            <Megaphone size={20} />
+            <Megaphone size={20} className="text-gray-300" />
             <h1 className="text-xl md:text-2xl font-semibold">
               New Announcement
             </h1>
@@ -76,7 +76,7 @@ export default function AnnouncementPage() {
             onChange={(e) => setText(e.target.value)}
             placeholder="Type your announcement here..."
             rows={3}
-            className="w-full resize-none rounded-xl border bg-transparent px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full resize-none rounded-xl border bg-transparent px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-200"
           />
 
           <button
@@ -90,7 +90,7 @@ export default function AnnouncementPage() {
 
         {/* ANNOUNCEMENT LIST */}
         <div className="bg-white/40 dark:bg-zinc-900/60 backdrop-blur-lg border border-white/30 dark:border-white/10 rounded-2xl shadow-xl p-4 sm:p-6">
-          <h2 className="text-lg font-semibold mb-4">Announcements</h2>
+          <h2 className="text-lg font-semibold mb-4 text-gray-400">Announcements</h2>
 
           {announcements.length === 0 ? (
             <p className="text-black-500">No announcements yet.</p>
@@ -105,7 +105,7 @@ export default function AnnouncementPage() {
                     <p className="text-sm text-gray-900 dark:text-gray-200">
                       {a.message}
                     </p>
-                    <p className="mt-2 text-xs text-gray-800">
+                    <p className="mt-2 text-xs text-gray-400">
                       {new Date(a.createdAt).toLocaleString()}
                     </p>
                   </div>
