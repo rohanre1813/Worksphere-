@@ -64,14 +64,21 @@ export default function AnalyticsSummary({ employeeId }) {
           <BarChart data={data}>
             <XAxis
               dataKey="name"
-              stroke="#e4e4e7" // Light zinc (zinc-200) for better visibility on dark
+              stroke="#e4e4e7"
               fontSize={10}
               tickLine={false}
               axisLine={false}
-              interval={0} // 🔥 Force show all labels
-              // 🔥 Rotate labels
-              textAnchor="end"
-              height={60}  // Increase height to fit rotated labels
+              interval={0}
+              height={60}
+              tick={({ x, y, payload }) => (
+                <g transform={`translate(${x},${y})`}>
+                  <text x={0} y={0} dy={16} textAnchor="middle" fill="#e4e4e7" fontSize={10}>
+                    {payload.value.split(" ").map((word, i) => (
+                      <tspan key={i} x={0} dy={i ? 12 : 0}>{word}</tspan>
+                    ))}
+                  </text>
+                </g>
+              )}
             />
             <Tooltip
               contentStyle={{ backgroundColor: '#414040ff', borderColor: '#3f3f46', color: '#fff' }}
