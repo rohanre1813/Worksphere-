@@ -4,6 +4,7 @@ html, body, #root {
   height: 100%;
 }
 html, body {
+  font-family: 'Inter', sans-serif;
   max-width: 100%;
   overflow-x: hidden;
 }
