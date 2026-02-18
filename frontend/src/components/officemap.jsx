@@ -182,7 +182,12 @@ export default function OfficeMap() {
         >
           {/* NAME */}
           <div className="mb-0.5 px-1.5 py-0.5 text-[10px] md:text-xs rounded-md bg-white/70 backdrop-blur shadow text-center">
-            <div className="font-bold">{emp.name}</div>
+            <div className="font-bold">{
+              emp.name.length > 5
+        ? emp.name.slice(0,4)+".."
+        : emp.name
+
+              }</div>
           </div>
 
           {/* DOT */}
