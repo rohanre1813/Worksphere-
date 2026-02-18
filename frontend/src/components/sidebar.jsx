@@ -64,7 +64,7 @@ export default function Sidebar() {
               whileTap={{ scale: 0.95 }}
               onClick={() => {
                 navigate(item.path);
-                setOpen(false);
+                if (window.innerWidth < 768) setOpen(false);
               }}
               className="w-full flex items-center gap-4 px-4 py-3
               rounded-xl border border-yellow-400/30
