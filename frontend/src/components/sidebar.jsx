@@ -62,7 +62,10 @@ export default function Sidebar() {
                 boxShadow: "0 0 15px rgba(250,204,21,0.5)",
               }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => navigate(item.path)}
+              onClick={() => {
+                navigate(item.path);
+                setOpen(false);
+              }}
               className="w-full flex items-center gap-4 px-4 py-3
               rounded-xl border border-yellow-400/30
               text-yellow-400 bg-black/70
@@ -70,7 +73,7 @@ export default function Sidebar() {
               transition-all"
             >
               <item.icon size={20} />
-              <span className="font-semibold tracking-wide">
+              <span className="font-semibold tracking-wide whitespace-nowrap">
                 {item.label}
               </span>
             </motion.button>

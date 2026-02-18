@@ -7,6 +7,8 @@ import { toast } from 'react-hot-toast';
 
 const COLORS = ['#FACC15', '#38BDF8', '#4ADE80', '#F472B6', '#A78BFA'];
 
+
+
 export default function OfficeAnalytics() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -84,6 +86,8 @@ export default function OfficeAnalytics() {
 
   const totalMinutes = data.reduce((acc, curr) => acc + curr.minutes, 0);
 
+
+
   return (
     <div className="w-full mt-6 bg-white/40 border border-white/30 rounded-xl p-4 shadow-sm">
       <style>{`
@@ -113,13 +117,21 @@ export default function OfficeAnalytics() {
           <BarChart data={data}>
             <XAxis
               dataKey="name"
-              stroke="#52525b" // Zinc-600 for visibility on light bg
+              stroke="#52525b"
               fontSize={10}
               tickLine={false}
               axisLine={false}
               interval={0}
-              textAnchor="end"
               height={60}
+              tick={({ x, y, payload }) => (
+                <g transform={`translate(${x},${y})`}>
+                  <text x={0} y={0} dy={16} textAnchor="middle" fill="#52525b" fontSize={10}>
+                    {payload.value.split(" ").map((word, i) => (
+                      <tspan key={i} x={0} dy={i ? 12 : 0}>{word}</tspan>
+                    ))}
+                  </text>
+                </g>
+              )}
             />
             <Tooltip
               contentStyle={{ backgroundColor: '#505050ff', borderColor: '#080808ff', color: '#fffefeff' }}
