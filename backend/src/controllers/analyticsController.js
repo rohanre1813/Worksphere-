@@ -1,5 +1,7 @@
 import ZoneLog from "../models/ZoneLog.js";
 
+import Employee from "../models/Employee.js"; // Import Employee model
+
 export const getEmployeeStats = async (req, res) => {
   try {
     const { id } = req.params; // Employee ID (Mongo ID)
@@ -8,10 +10,19 @@ export const getEmployeeStats = async (req, res) => {
     const isSelf = req.user.id === id;
     const isAdmin = req.user.role === "admin";
 
-    // Simple security check (could be more robust)
+    // Security Check
     if (!isAdmin && !isSelf) {
-      // If standard employee token, req.user.id is the employee's ID.
-      if (req.user.id !== id) {
+      // Check if they are co-workers (same admin)
+      const requester = await Employee.findById(req.user.id).select("admin");
+      const target = await Employee.findById(id).select("admin");
+
+      if (
+        !requester ||
+        !target ||
+        !requester.admin ||
+        !target.admin ||
+        requester.admin.toString() !== target.admin.toString()
+      ) {
         return res.status(403).json({ message: "Unauthorized" });
       }
     }
