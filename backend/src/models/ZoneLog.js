@@ -31,5 +31,7 @@ const zoneLogSchema = new mongoose.Schema({
 
 // Index for quick lookup of active sessions
 zoneLogSchema.index({ employeeId: 1, exitTime: 1 });
+// Index for Office Analytics (filtering by admin)
+zoneLogSchema.index({ adminId: 1 });
 
 export default mongoose.model("ZoneLog", zoneLogSchema);

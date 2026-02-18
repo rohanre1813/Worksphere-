@@ -21,7 +21,7 @@ const employeeSchema = new mongoose.Schema(
     */
     email: {
       type: String,
-      unique: true, 
+      unique: true,
       required: true,
     },
 
@@ -68,6 +68,9 @@ const employeeSchema = new mongoose.Schema(
 */
 
 employeeSchema.index({ employeeId: 1, admin: 1 }, { unique: true });
+
+// Index for fetching employees by admin (Office Map, Employee List)
+employeeSchema.index({ admin: 1 });
 
 
 

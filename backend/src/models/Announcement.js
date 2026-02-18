@@ -15,4 +15,7 @@ const announcementSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Index for fetching announcements by admin
+announcementSchema.index({ admin: 1 });
+
 export default mongoose.model("Announcement", announcementSchema);
