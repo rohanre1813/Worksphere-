@@ -70,10 +70,7 @@ function calculateRandomPositions(employees) {
 
       positioned.push({
         ...emp,
-        pos: {
-          left: `${leftVal}%`,
-          top: `${topVal}%`,
-        },
+        pos: { left: leftVal, top: topVal },
       });
     });
   });
@@ -150,58 +147,56 @@ export default function OfficeMap() {
   */
   return (
     <div className="fixed inset-0 md:left-64 p-4 overflow-hidden" onWheel={handleWheel}>
-      <div style={{ transform: `scale(${zoom})`, transformOrigin: "top left", width: "100%", height: "100%", transition: "transform 0.1s ease" }}>
 
-        {/* DEBUG */}
-        <div className="absolute top-0 right-2 z-50 bg-black/80 text-white p-2 rounded-lg text-[8px] font-mono pointer-events-none">
-          OFFICE ID: {debugAdminId || "Connecting..."}
-          <br />
-          ROOM: {socketRef.current?.connected ? "CONNECTED" : "DISCONNECTED"}
-          <br />
-          EMPS: {employees.length} (Visible: {positionedEmployees.length})
-        </div>
-
-        {/* ================= ZONES ================= */}
-        {Object.entries(ZONES).map(([title, box]) => (
-          <Zone
-            key={title}
-            title={title}
-            box={box}
-            colorClass={ZONE_COLORS[title]}
-          />
-        ))}
-
-        {/* ================= EMPLOYEE DOTS ================= */}
-        {positionedEmployees.map((emp) => (
-          <motion.div
-            key={emp.employeeId}
-            onClick={() => {
-              if (location.pathname.includes("/employee/")) {
-                navigate(`/employee/details/${emp.employeeId}`);
-              } else {
-                navigate(`/admin/employee-details/${emp.employeeId}`);
-              }
-            }}
-            className="absolute flex flex-col items-center cursor-pointer hover:scale-130"
-            initial={emp.pos}
-            animate={emp.pos}
-            transition={{ duration: 2 }}
-          >
-            {/* NAME */}
-            <div className="mb-0.5 px-1.5 py-0.5 text-[10px] md:text-xs rounded-md bg-white/70 backdrop-blur shadow text-center">
-              <div className="font-bold">{
-                emp.name.length > 5
-                  ? emp.name.slice(0, 4) + ".."
-                  : emp.name
-
-              }</div>
-            </div>
-
-            {/* DOT */}
-            <div className="w-2 h-2 md:w-3 md:h-3 lg:w-4 lg:h-4 rounded-full bg-yellow-400 border border-black shadow" />
-          </motion.div>
-        ))}
+      {/* DEBUG */}
+      <div className="absolute top-0 right-2 z-50 bg-black/80 text-white p-2 rounded-lg text-[8px] font-mono pointer-events-none">
+        OFFICE ID: {debugAdminId || "Connecting..."}
+        <br />
+        ROOM: {socketRef.current?.connected ? "CONNECTED" : "DISCONNECTED"}
+        <br />
+        EMPS: {employees.length} (Visible: {positionedEmployees.length})
       </div>
+
+      {/* ================= ZONES ================= */}
+      {Object.entries(ZONES).map(([title, box]) => (
+        <Zone
+          key={title}
+          title={title}
+          box={box}
+          zoom={zoom}
+          colorClass={ZONE_COLORS[title]}
+        />
+      ))}
+
+      {/* ================= EMPLOYEE DOTS ================= */}
+      {positionedEmployees.map((emp) => (
+        <motion.div
+          key={emp.employeeId}
+          onClick={() => {
+            if (location.pathname.includes("/employee/")) {
+              navigate(`/employee/details/${emp.employeeId}`);
+            } else {
+              navigate(`/admin/employee-details/${emp.employeeId}`);
+            }
+          }}
+          className="absolute flex flex-col items-center cursor-pointer hover:scale-130"
+          style={{ left: `${emp.pos.left * zoom}%`, top: `${emp.pos.top * zoom}%` }}
+          transition={{ duration: 2 }}
+        >
+          {/* NAME */}
+          <div className="mb-0.5 px-1.5 py-0.5 text-[10px] md:text-xs rounded-md bg-white/70 backdrop-blur shadow text-center">
+            <div className="font-bold">{
+              emp.name.length > 5
+                ? emp.name.slice(0, 4) + ".."
+                : emp.name
+
+            }</div>
+          </div>
+
+          {/* DOT */}
+          <div className="w-2 h-2 md:w-3 md:h-3 lg:w-4 lg:h-4 rounded-full bg-yellow-400 border border-black shadow" />
+        </motion.div>
+      ))}
     </div>
   );
 }
@@ -211,7 +206,7 @@ export default function OfficeMap() {
    ZONE UI
 ========================================================
 */
-function Zone({ title, box, colorClass }) {
+function Zone({ title, box, zoom, colorClass }) {
   return (
     <div
       className={`
@@ -226,10 +221,10 @@ function Zone({ title, box, colorClass }) {
         shadow-xl
       `}
       style={{
-        top: `${box.top}%`,
-        left: `${box.left}%`,
-        width: `${box.width}%`,
-        height: `${box.height}%`,
+        top: `${box.top * zoom}%`,
+        left: `${box.left * zoom}%`,
+        width: `${box.width * zoom}%`,
+        height: `${box.height * zoom}%`,
       }}
     >
       {title}
