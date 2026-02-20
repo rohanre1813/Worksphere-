@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import PacManAnimatedBackground from "./components/pacman";
+import LandingPage from "./components/LandingPage";
 import AnimatedLogin from "./components/login";
 import RegisterPage from "./pages/register";
 
@@ -30,7 +31,8 @@ function App() {
           <Routes>
 
             {/* Public */}
-            <Route path="/" element={<AnimatedLogin />} />
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/login" element={<AnimatedLogin />} />
             <Route path="/register" element={<RegisterPage role="admin" />} />
 
             {/* Admin Routes */}
