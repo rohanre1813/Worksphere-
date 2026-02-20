@@ -35,13 +35,13 @@ const ZONE_COLORS = {
 
 /*
 ========================================================
-   GRID POSITION GENERATOR
+   ADAPTIVE GRID POSITION GENERATOR
 ========================================================
+   - Cols adapt to zone aspect ratio & employee count
+   - Scale shrinks dot + label as density increases
 */
-const COLS_DESKTOP = 12;
-const COLS_MOBILE = 6;
 
-function calculateRandomPositions(employees) {
+function calculateAdaptivePositions(employees) {
   const zoneGroups = {};
 
   employees.forEach((emp) => {
@@ -55,12 +55,13 @@ function calculateRandomPositions(employees) {
   const positioned = [];
 
   // Padding (in %) to keep dots away from zone edges
-  const PAD_X = 3;
-  const PAD_TOP = 5;
-  const PAD_BOTTOM = 3;
+  const PAD_X = 2;
+  const PAD_TOP = 4;
+  const PAD_BOTTOM = 2;
 
   Object.entries(zoneGroups).forEach(([zoneKey, zoneEmployees]) => {
     const box = ZONES[zoneKey];
+    const count = zoneEmployees.length;
 
     // Inner area after padding
     const innerLeft = box.left + PAD_X;
@@ -68,10 +69,17 @@ function calculateRandomPositions(employees) {
     const innerWidth = box.width - PAD_X * 2;
     const innerHeight = box.height - PAD_TOP - PAD_BOTTOM;
 
-    const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
-    const maxCols = isMobile ? COLS_MOBILE : COLS_DESKTOP;
-    const cols = Math.min(maxCols, zoneEmployees.length);
-    const rows = Math.ceil(zoneEmployees.length / cols);
+    // Adaptive cols: based on zone aspect ratio
+    const aspectRatio = innerWidth / innerHeight;
+    let cols = Math.max(1, Math.round(Math.sqrt(count * aspectRatio)));
+    cols = Math.min(cols, count);
+    const rows = Math.ceil(count / cols);
+
+    // Dynamic scale: shrinks as density increases (1.0 → 0.4 min)
+    const area = innerWidth * innerHeight;
+    const densityPerDot = area / count;
+    // At ~30 area-per-dot = full size, at ~3 area-per-dot = min size
+    const scale = Math.max(0.4, Math.min(1.0, densityPerDot / 30));
 
     zoneEmployees.forEach((emp, index) => {
       const row = Math.floor(index / cols);
@@ -92,6 +100,7 @@ function calculateRandomPositions(employees) {
 
       positioned.push({
         ...emp,
+        scale,
         pos: {
           left: `${clampedLeft}%`,
           top: `${clampedTop}%`,
@@ -156,7 +165,7 @@ export default function OfficeMap() {
   }, []);
 
   const positionedEmployees = useMemo(() => {
-    return calculateRandomPositions(employees);
+    return calculateAdaptivePositions(employees);
   }, [employees]);
 
   /*
@@ -206,9 +215,12 @@ export default function OfficeMap() {
                 }
               }}
               className="flex flex-col items-center cursor-pointer hover:scale-110 transition-transform -translate-x-1/2 -translate-y-1/2"
+              style={{ transform: `translate(-50%, -50%) scale(${emp.scale})` }}
             >
               {/* NAME */}
-              <div className="mb-0.5 px-0.5 py-0 text-[6px] md:text-[8px] lg:text-[10px] rounded bg-white/70 backdrop-blur shadow text-center whitespace-nowrap leading-tight">
+              <div className="mb-0.5 px-0.5 py-0 rounded bg-white/70 backdrop-blur shadow text-center whitespace-nowrap leading-tight"
+                style={{ fontSize: `${Math.max(5, 10 * emp.scale)}px` }}
+              >
                 <div className="font-bold">{
                   emp.name.length > 5
                     ? emp.name.slice(0, 4) + ".."
@@ -217,7 +229,13 @@ export default function OfficeMap() {
               </div>
 
               {/* DOT */}
-              <div className="w-1.5 h-1.5 md:w-2 md:h-2 lg:w-3 lg:h-3 rounded-full bg-yellow-400 border border-black shadow" />
+              <div
+                className="rounded-full bg-yellow-400 border border-black shadow"
+                style={{
+                  width: `${Math.max(4, 12 * emp.scale)}px`,
+                  height: `${Math.max(4, 12 * emp.scale)}px`,
+                }}
+              />
             </div>
           </motion.div>
         ))}
