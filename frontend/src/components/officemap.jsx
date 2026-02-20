@@ -55,9 +55,9 @@ function calculateAdaptivePositions(employees) {
   const positioned = [];
 
   // Padding (in %) to keep dots away from zone edges
-  const PAD_X = 2;
-  const PAD_TOP = 4;
-  const PAD_BOTTOM = 2;
+  const PAD_X = 4;
+  const PAD_TOP = 6;
+  const PAD_BOTTOM = 4;
 
   Object.entries(zoneGroups).forEach(([zoneKey, zoneEmployees]) => {
     const box = ZONES[zoneKey];
@@ -75,11 +75,11 @@ function calculateAdaptivePositions(employees) {
     cols = Math.min(cols, count);
     const rows = Math.ceil(count / cols);
 
-    // Dynamic scale: shrinks as density increases (1.0 → 0.4 min)
+    // Dynamic scale: shrinks as density increases (1.0 → 0.5 min)
     const area = innerWidth * innerHeight;
     const densityPerDot = area / count;
-    // At ~30 area-per-dot = full size, at ~3 area-per-dot = min size
-    const scale = Math.max(0.4, Math.min(1.0, densityPerDot / 30));
+    // Gentler curve: full size at ~80 area-per-dot, min at high density
+    const scale = Math.max(0.5, Math.min(1.0, densityPerDot / 80));
 
     zoneEmployees.forEach((emp, index) => {
       const row = Math.floor(index / cols);
@@ -94,9 +94,9 @@ function calculateAdaptivePositions(employees) {
         ? innerTop + innerHeight / 2
         : innerTop + (row / (rows - 1)) * innerHeight;
 
-      // Clamp to zone boundaries as a safety net
-      const clampedLeft = Math.max(box.left + 1, Math.min(leftVal, box.left + box.width - 1));
-      const clampedTop = Math.max(box.top + 1, Math.min(topVal, box.top + box.height - 1));
+      // Clamp to zone boundaries with tighter margin
+      const clampedLeft = Math.max(box.left + 3, Math.min(leftVal, box.left + box.width - 3));
+      const clampedTop = Math.max(box.top + 3, Math.min(topVal, box.top + box.height - 3));
 
       positioned.push({
         ...emp,
@@ -214,12 +214,11 @@ export default function OfficeMap() {
                   navigate(`/admin/employee-details/${emp.employeeId}`);
                 }
               }}
-              className="flex flex-col items-center cursor-pointer hover:scale-110 transition-transform -translate-x-1/2 -translate-y-1/2"
-              style={{ transform: `translate(-50%, -50%) scale(${emp.scale})` }}
+              className="flex flex-col items-center cursor-pointer hover:scale-150 transition-transform -translate-x-1/2 -translate-y-1/2"
             >
               {/* NAME */}
-              <div className="mb-0.5 px-0.5 py-0 rounded bg-white/70 backdrop-blur shadow text-center whitespace-nowrap leading-tight"
-                style={{ fontSize: `${Math.max(5, 10 * emp.scale)}px` }}
+              <div className="mb-0.5 px-1 py-0 rounded bg-white/70 backdrop-blur shadow text-center whitespace-nowrap leading-tight"
+                style={{ fontSize: `${Math.max(8, 12 * emp.scale)}px` }}
               >
                 <div className="font-bold">{
                   emp.name.length > 5
@@ -232,8 +231,8 @@ export default function OfficeMap() {
               <div
                 className="rounded-full bg-yellow-400 border border-black shadow"
                 style={{
-                  width: `${Math.max(4, 12 * emp.scale)}px`,
-                  height: `${Math.max(4, 12 * emp.scale)}px`,
+                  width: `${Math.max(6, 14 * emp.scale)}px`,
+                  height: `${Math.max(6, 14 * emp.scale)}px`,
                 }}
               />
             </div>
