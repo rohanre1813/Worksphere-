@@ -90,10 +90,37 @@ export default function OfficeMap() {
   const [debugAdminId, setDebugAdminId] = useState(null);
   const socketRef = useRef(null);
   const [zoom, setZoom] = useState(1);
+  const lastTouchDist = useRef(null);
 
   const handleWheel = (e) => {
     e.preventDefault();
     setZoom((z) => Math.min(3, Math.max(1, z - e.deltaY * 0.001)));
+  };
+
+  const handleTouchStart = (e) => {
+    if (e.touches.length === 2) {
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      lastTouchDist.current = Math.hypot(dx, dy);
+    }
+  };
+
+  const handleTouchMove = (e) => {
+    if (e.touches.length === 2) {
+      e.preventDefault();
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      const dist = Math.hypot(dx, dy);
+      if (lastTouchDist.current) {
+        const delta = dist - lastTouchDist.current;
+        setZoom((z) => Math.min(3, Math.max(1, z + delta * 0.01)));
+      }
+      lastTouchDist.current = dist;
+    }
+  };
+
+  const handleTouchEnd = () => {
+    lastTouchDist.current = null;
   };
 
   /*
@@ -146,7 +173,13 @@ export default function OfficeMap() {
   ========================================================
   */
   return (
-    <div className="fixed inset-0 md:left-64 p-4 overflow-hidden" onWheel={handleWheel}>
+    <div
+      className="fixed inset-0 md:left-64 p-4 overflow-hidden"
+      onWheel={handleWheel}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
 
       {/* DEBUG */}
       <div className="absolute top-0 right-2 z-50 bg-black/80 text-white p-2 rounded-lg text-[8px] font-mono pointer-events-none">
