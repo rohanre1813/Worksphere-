@@ -170,7 +170,7 @@ export default function OfficeMap() {
 
       {/* ================= EMPLOYEE DOTS ================= */}
       {positionedEmployees.map((emp) => (
-        <motion.div
+        <div
           key={emp.employeeId}
           onClick={() => {
             if (location.pathname.includes("/employee/")) {
@@ -179,23 +179,19 @@ export default function OfficeMap() {
               navigate(`/admin/employee-details/${emp.employeeId}`);
             }
           }}
-          className="absolute flex flex-col items-center cursor-pointer hover:scale-130"
-          style={{ left: `${emp.pos.left * zoom}%`, top: `${emp.pos.top * zoom}%` }}
-          transition={{ duration: 2 }}
+          className="absolute flex flex-col items-center cursor-pointer hover:scale-110"
+          style={{ left: `${emp.pos.left * zoom}%`, top: `${emp.pos.top * zoom}%`, transition: "left 1.5s ease, top 1.5s ease" }}
         >
           {/* NAME */}
-          <div className="mb-0.5 px-1.5 py-0.5 text-[10px] md:text-xs rounded-md bg-white/70 backdrop-blur shadow text-center">
-            <div className="font-bold">{
-              emp.name.length > 5
-                ? emp.name.slice(0, 4) + ".."
-                : emp.name
-
-            }</div>
+          <div style={{ fontSize: 10 }} className="mb-0.5 px-1.5 py-0.5 rounded-md bg-white/70 backdrop-blur shadow text-center">
+            <div className="font-bold">
+              {emp.name.length > 5 ? emp.name.slice(0, 4) + ".." : emp.name}
+            </div>
           </div>
 
           {/* DOT */}
-          <div className="w-2 h-2 md:w-3 md:h-3 lg:w-4 lg:h-4 rounded-full bg-yellow-400 border border-black shadow" />
-        </motion.div>
+          <div style={{ width: 10, height: 10, flexShrink: 0 }} className="rounded-full bg-yellow-400 border border-black shadow" />
+        </div>
       ))}
     </div>
   );
