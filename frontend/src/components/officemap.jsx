@@ -70,7 +70,10 @@ function calculateRandomPositions(employees) {
 
       positioned.push({
         ...emp,
-        pos: { left: leftVal, top: topVal },
+        pos: {
+          left: `${leftVal}%`,
+          top: `${topVal}%`,
+        },
       });
     });
   });
@@ -89,39 +92,6 @@ export default function OfficeMap() {
   const [employees, setEmployees] = useState([]);
   const [debugAdminId, setDebugAdminId] = useState(null);
   const socketRef = useRef(null);
-  const [zoom, setZoom] = useState(1);
-  const lastTouchDist = useRef(null);
-
-  const handleWheel = (e) => {
-    e.preventDefault();
-    setZoom((z) => Math.min(3, Math.max(1, z - e.deltaY * 0.001)));
-  };
-
-  const handleTouchStart = (e) => {
-    if (e.touches.length === 2) {
-      const dx = e.touches[0].clientX - e.touches[1].clientX;
-      const dy = e.touches[0].clientY - e.touches[1].clientY;
-      lastTouchDist.current = Math.hypot(dx, dy);
-    }
-  };
-
-  const handleTouchMove = (e) => {
-    if (e.touches.length === 2) {
-      e.preventDefault();
-      const dx = e.touches[0].clientX - e.touches[1].clientX;
-      const dy = e.touches[0].clientY - e.touches[1].clientY;
-      const dist = Math.hypot(dx, dy);
-      if (lastTouchDist.current) {
-        const delta = dist - lastTouchDist.current;
-        setZoom((z) => Math.min(3, Math.max(1, z + delta * 0.01)));
-      }
-      lastTouchDist.current = dist;
-    }
-  };
-
-  const handleTouchEnd = () => {
-    lastTouchDist.current = null;
-  };
 
   /*
   ========================================================
@@ -173,70 +143,57 @@ export default function OfficeMap() {
   ========================================================
   */
   return (
-    <div
-      className="fixed inset-0 md:left-64 p-4 overflow-auto scrollbar-hide"
-      onWheel={handleWheel}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-    >
-      <div
-        className="relative shadow-2xl rounded-3xl"
-        style={{
-          width: `${zoom * 100}%`,
-          height: `${zoom * 100}%`,
-          minWidth: "100%",
-          minHeight: "100%",
-          transition: "width 0.2s ease, height 0.2s ease"
-        }}
-      >
+    <div className="fixed inset-0 md:left-64 p-4 overflow-hidden">
 
-        {/* DEBUG */}
-        <div className="absolute top-0 right-2 z-50 bg-black/80 text-white p-2 rounded-lg text-[8px] font-mono pointer-events-none">
-          OFFICE ID: {debugAdminId || "Connecting..."}
-          <br />
-          ROOM: {socketRef.current?.connected ? "CONNECTED" : "DISCONNECTED"}
-          <br />
-          EMPS: {employees.length} (Visible: {positionedEmployees.length})
-        </div>
-
-        {/* ================= ZONES ================= */}
-        {Object.entries(ZONES).map(([title, box]) => (
-          <Zone
-            key={title}
-            title={title}
-            box={box}
-            zoom={zoom}
-            colorClass={ZONE_COLORS[title]}
-          />
-        ))}
-
-        {/* ================= EMPLOYEE DOTS ================= */}
-        {positionedEmployees.map((emp) => (
-          <div
-            key={emp.employeeId}
-            onClick={() => {
-              if (location.pathname.includes("/employee/")) {
-                navigate(`/employee/details/${emp.employeeId}`);
-              } else {
-                navigate(`/admin/employee-details/${emp.employeeId}`);
-              }
-            }}
-            className="absolute flex flex-col items-center cursor-pointer hover:scale-110"
-            style={{ left: `${emp.pos.left}%`, top: `${emp.pos.top}%`, transition: "left 1.5s ease, top 1.5s ease" }}
-          >
-            {/* NAME */}
-            <div style={{ fontSize: 10 }} className="mb-0.5 px-1.5 py-0.5 rounded-md bg-white/70 backdrop-blur shadow text-center">
-              <div className="font-bold">
-                {emp.name.length > 5 ? emp.name.slice(0, 4) + ".." : emp.name}
-              </div>
-            </div>
-
-            {/* DOT */}
-            <div style={{ width: 10, height: 10, flexShrink: 0 }} className="rounded-full bg-yellow-400 border border-black shadow" />
-          </div>
-        ))}
+      {/* DEBUG */}
+      <div className="absolute top-0 right-2 z-50 bg-black/80 text-white p-2 rounded-lg text-[8px] font-mono pointer-events-none">
+        OFFICE ID: {debugAdminId || "Connecting..."}
+        <br />
+        ROOM: {socketRef.current?.connected ? "CONNECTED" : "DISCONNECTED"}
+        <br />
+        EMPS: {employees.length} (Visible: {positionedEmployees.length})
       </div>
+
+      {/* ================= ZONES ================= */}
+      {Object.entries(ZONES).map(([title, box]) => (
+        <Zone
+          key={title}
+          title={title}
+          box={box}
+          colorClass={ZONE_COLORS[title]}
+        />
+      ))}
+
+      {/* ================= EMPLOYEE DOTS ================= */}
+      {positionedEmployees.map((emp) => (
+        <motion.div
+          key={emp.employeeId}
+          onClick={() => {
+            if (location.pathname.includes("/employee/")) {
+              navigate(`/employee/details/${emp.employeeId}`);
+            } else {
+              navigate(`/admin/employee-details/${emp.employeeId}`);
+            }
+          }}
+          className="absolute flex flex-col items-center cursor-pointer hover:scale-130"
+          initial={emp.pos}
+          animate={emp.pos}
+          transition={{ duration: 2 }}
+        >
+          {/* NAME */}
+          <div className="mb-0.5 px-1.5 py-0.5 text-[10px] md:text-xs rounded-md bg-white/70 backdrop-blur shadow text-center">
+            <div className="font-bold">{
+              emp.name.length > 5
+                ? emp.name.slice(0, 4) + ".."
+                : emp.name
+
+            }</div>
+          </div>
+
+          {/* DOT */}
+          <div className="w-2 h-2 md:w-3 md:h-3 lg:w-4 lg:h-4 rounded-full bg-yellow-400 border border-black shadow" />
+        </motion.div>
+      ))}
     </div>
   );
 }
