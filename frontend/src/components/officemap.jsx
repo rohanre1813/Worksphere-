@@ -92,6 +92,12 @@ export default function OfficeMap() {
   const [employees, setEmployees] = useState([]);
   const [debugAdminId, setDebugAdminId] = useState(null);
   const socketRef = useRef(null);
+  const [zoom, setZoom] = useState(1);
+
+  const handleWheel = (e) => {
+    e.preventDefault();
+    setZoom((z) => Math.min(3, Math.max(1, z - e.deltaY * 0.001)));
+  };
 
   /*
   ========================================================
@@ -143,57 +149,59 @@ export default function OfficeMap() {
   ========================================================
   */
   return (
-    <div className="fixed inset-0 md:left-64 p-4 overflow-hidden">
+    <div className="fixed inset-0 md:left-64 p-4 overflow-hidden" onWheel={handleWheel}>
+      <div style={{ transform: `scale(${zoom})`, transformOrigin: "top left", width: "100%", height: "100%", transition: "transform 0.1s ease" }}>
 
-      {/* DEBUG */}
-      <div className="absolute top-0 right-2 z-50 bg-black/80 text-white p-2 rounded-lg text-[8px] font-mono pointer-events-none">
-        OFFICE ID: {debugAdminId || "Connecting..."}
-        <br />
-        ROOM: {socketRef.current?.connected ? "CONNECTED" : "DISCONNECTED"}
-        <br />
-        EMPS: {employees.length} (Visible: {positionedEmployees.length})
-      </div>
+        {/* DEBUG */}
+        <div className="absolute top-0 right-2 z-50 bg-black/80 text-white p-2 rounded-lg text-[8px] font-mono pointer-events-none">
+          OFFICE ID: {debugAdminId || "Connecting..."}
+          <br />
+          ROOM: {socketRef.current?.connected ? "CONNECTED" : "DISCONNECTED"}
+          <br />
+          EMPS: {employees.length} (Visible: {positionedEmployees.length})
+        </div>
 
-      {/* ================= ZONES ================= */}
-      {Object.entries(ZONES).map(([title, box]) => (
-        <Zone
-          key={title}
-          title={title}
-          box={box}
-          colorClass={ZONE_COLORS[title]}
-        />
-      ))}
+        {/* ================= ZONES ================= */}
+        {Object.entries(ZONES).map(([title, box]) => (
+          <Zone
+            key={title}
+            title={title}
+            box={box}
+            colorClass={ZONE_COLORS[title]}
+          />
+        ))}
 
-      {/* ================= EMPLOYEE DOTS ================= */}
-      {positionedEmployees.map((emp) => (
-        <motion.div
-          key={emp.employeeId}
-          onClick={() => {
-            if (location.pathname.includes("/employee/")) {
-              navigate(`/employee/details/${emp.employeeId}`);
-            } else {
-              navigate(`/admin/employee-details/${emp.employeeId}`);
-            }
-          }}
-          className="absolute flex flex-col items-center cursor-pointer hover:scale-130"
-          initial={emp.pos}
-          animate={emp.pos}
-          transition={{ duration: 2 }}
-        >
-          {/* NAME */}
-          <div className="mb-0.5 px-1.5 py-0.5 text-[10px] md:text-xs rounded-md bg-white/70 backdrop-blur shadow text-center">
-            <div className="font-bold">{
-              emp.name.length > 5
-        ? emp.name.slice(0,4)+".."
-        : emp.name
+        {/* ================= EMPLOYEE DOTS ================= */}
+        {positionedEmployees.map((emp) => (
+          <motion.div
+            key={emp.employeeId}
+            onClick={() => {
+              if (location.pathname.includes("/employee/")) {
+                navigate(`/employee/details/${emp.employeeId}`);
+              } else {
+                navigate(`/admin/employee-details/${emp.employeeId}`);
+              }
+            }}
+            className="absolute flex flex-col items-center cursor-pointer hover:scale-130"
+            initial={emp.pos}
+            animate={emp.pos}
+            transition={{ duration: 2 }}
+          >
+            {/* NAME */}
+            <div className="mb-0.5 px-1.5 py-0.5 text-[10px] md:text-xs rounded-md bg-white/70 backdrop-blur shadow text-center">
+              <div className="font-bold">{
+                emp.name.length > 5
+                  ? emp.name.slice(0, 4) + ".."
+                  : emp.name
 
               }</div>
-          </div>
+            </div>
 
-          {/* DOT */}
-          <div className="w-2 h-2 md:w-3 md:h-3 lg:w-4 lg:h-4 rounded-full bg-yellow-400 border border-black shadow" />
-        </motion.div>
-      ))}
+            {/* DOT */}
+            <div className="w-2 h-2 md:w-3 md:h-3 lg:w-4 lg:h-4 rounded-full bg-yellow-400 border border-black shadow" />
+          </motion.div>
+        ))}
+      </div>
     </div>
   );
 }
