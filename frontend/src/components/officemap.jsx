@@ -53,26 +53,45 @@ function calculateRandomPositions(employees) {
 
   const positioned = [];
 
+  // Padding (in %) to keep dots away from zone edges
+  const PAD_X = 3;
+  const PAD_TOP = 5;
+  const PAD_BOTTOM = 3;
+
   Object.entries(zoneGroups).forEach(([zoneKey, zoneEmployees]) => {
     const box = ZONES[zoneKey];
 
-    const rows = Math.ceil(zoneEmployees.length / COLS);
+    // Inner area after padding
+    const innerLeft = box.left + PAD_X;
+    const innerTop = box.top + PAD_TOP;
+    const innerWidth = box.width - PAD_X * 2;
+    const innerHeight = box.height - PAD_TOP - PAD_BOTTOM;
+
+    const cols = Math.min(COLS, zoneEmployees.length);
+    const rows = Math.ceil(zoneEmployees.length / cols);
 
     zoneEmployees.forEach((emp, index) => {
-      const row = Math.floor(index / COLS);
-      const col = index % COLS;
+      const row = Math.floor(index / cols);
+      const col = index % cols;
 
-      const cellWidth = box.width / COLS;
-      const cellHeight = box.height / rows;
+      // Evenly distribute within inner area
+      const leftVal = cols === 1
+        ? innerLeft + innerWidth / 2
+        : innerLeft + (col / (cols - 1)) * innerWidth;
 
-      const leftVal = box.left + col * cellWidth + cellWidth / 2;
-      const topVal = box.top + row * cellHeight + cellHeight / 2;
+      const topVal = rows === 1
+        ? innerTop + innerHeight / 2
+        : innerTop + (row / (rows - 1)) * innerHeight;
+
+      // Clamp to zone boundaries as a safety net
+      const clampedLeft = Math.max(box.left + 1, Math.min(leftVal, box.left + box.width - 1));
+      const clampedTop = Math.max(box.top + 1, Math.min(topVal, box.top + box.height - 1));
 
       positioned.push({
         ...emp,
         pos: {
-          left: `${leftVal}%`,
-          top: `${topVal}%`,
+          left: `${clampedLeft}%`,
+          top: `${clampedTop}%`,
         },
       });
     });
