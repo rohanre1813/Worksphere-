@@ -38,7 +38,8 @@ const ZONE_COLORS = {
    GRID POSITION GENERATOR
 ========================================================
 */
-const COLS = 8;
+const COLS_DESKTOP = 12;
+const COLS_MOBILE = 6;
 
 function calculateRandomPositions(employees) {
   const zoneGroups = {};
@@ -67,7 +68,9 @@ function calculateRandomPositions(employees) {
     const innerWidth = box.width - PAD_X * 2;
     const innerHeight = box.height - PAD_TOP - PAD_BOTTOM;
 
-    const cols = Math.min(COLS, zoneEmployees.length);
+    const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+    const maxCols = isMobile ? COLS_MOBILE : COLS_DESKTOP;
+    const cols = Math.min(maxCols, zoneEmployees.length);
     const rows = Math.ceil(zoneEmployees.length / cols);
 
     zoneEmployees.forEach((emp, index) => {
@@ -162,57 +165,63 @@ export default function OfficeMap() {
   ========================================================
   */
   return (
-    <div className="fixed inset-0 md:left-64 p-4 overflow-hidden">
+    <div className="fixed inset-0 md:left-64 p-2 md:p-4 overflow-auto">
+      <div className="relative w-full" style={{ minHeight: "100vh", height: "100%" }}>
 
-      {/* DEBUG */}
-      <div className="absolute top-0 right-2 z-50 bg-black/80 text-white p-2 rounded-lg text-[8px] font-mono pointer-events-none">
-        OFFICE ID: {debugAdminId || "Connecting..."}
-        <br />
-        ROOM: {socketRef.current?.connected ? "CONNECTED" : "DISCONNECTED"}
-        <br />
-        EMPS: {employees.length} (Visible: {positionedEmployees.length})
+        {/* DEBUG */}
+        <div className="absolute top-0 right-2 z-50 bg-black/80 text-white p-2 rounded-lg text-[8px] font-mono pointer-events-none">
+          OFFICE ID: {debugAdminId || "Connecting..."}
+          <br />
+          ROOM: {socketRef.current?.connected ? "CONNECTED" : "DISCONNECTED"}
+          <br />
+          EMPS: {employees.length} (Visible: {positionedEmployees.length})
+        </div>
+
+        {/* ================= ZONES ================= */}
+        {Object.entries(ZONES).map(([title, box]) => (
+          <Zone
+            key={title}
+            title={title}
+            box={box}
+            colorClass={ZONE_COLORS[title]}
+          />
+        ))}
+
+        {/* ================= EMPLOYEE DOTS ================= */}
+        {positionedEmployees.map((emp) => (
+          <motion.div
+            key={emp.employeeId}
+            className="absolute"
+            initial={emp.pos}
+            animate={emp.pos}
+            transition={{ duration: 2 }}
+          >
+            {/* Inner wrapper: centers content on the position point */}
+            <div
+              onClick={() => {
+                if (location.pathname.includes("/employee/")) {
+                  navigate(`/employee/details/${emp.employeeId}`);
+                } else {
+                  navigate(`/admin/employee-details/${emp.employeeId}`);
+                }
+              }}
+              className="flex flex-col items-center cursor-pointer hover:scale-110 transition-transform -translate-x-1/2 -translate-y-1/2"
+            >
+              {/* NAME */}
+              <div className="mb-0.5 px-0.5 py-0 text-[6px] md:text-[8px] lg:text-[10px] rounded bg-white/70 backdrop-blur shadow text-center whitespace-nowrap leading-tight">
+                <div className="font-bold">{
+                  emp.name.length > 5
+                    ? emp.name.slice(0, 4) + ".."
+                    : emp.name
+                }</div>
+              </div>
+
+              {/* DOT */}
+              <div className="w-1.5 h-1.5 md:w-2 md:h-2 lg:w-3 lg:h-3 rounded-full bg-yellow-400 border border-black shadow" />
+            </div>
+          </motion.div>
+        ))}
       </div>
-
-      {/* ================= ZONES ================= */}
-      {Object.entries(ZONES).map(([title, box]) => (
-        <Zone
-          key={title}
-          title={title}
-          box={box}
-          colorClass={ZONE_COLORS[title]}
-        />
-      ))}
-
-      {/* ================= EMPLOYEE DOTS ================= */}
-      {positionedEmployees.map((emp) => (
-        <motion.div
-          key={emp.employeeId}
-          onClick={() => {
-            if (location.pathname.includes("/employee/")) {
-              navigate(`/employee/details/${emp.employeeId}`);
-            } else {
-              navigate(`/admin/employee-details/${emp.employeeId}`);
-            }
-          }}
-          className="absolute flex flex-col items-center cursor-pointer hover:scale-130"
-          initial={emp.pos}
-          animate={emp.pos}
-          transition={{ duration: 2 }}
-        >
-          {/* NAME */}
-          <div className="mb-0.5 px-1.5 py-0.5 text-[10px] md:text-xs rounded-md bg-white/70 backdrop-blur shadow text-center">
-            <div className="font-bold">{
-              emp.name.length > 5
-                ? emp.name.slice(0, 4) + ".."
-                : emp.name
-
-            }</div>
-          </div>
-
-          {/* DOT */}
-          <div className="w-2 h-2 md:w-3 md:h-3 lg:w-4 lg:h-4 rounded-full bg-yellow-400 border border-black shadow" />
-        </motion.div>
-      ))}
     </div>
   );
 }
