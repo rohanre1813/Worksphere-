@@ -8,6 +8,7 @@ import { io } from "socket.io-client";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { API_BASE_URL, SOCKET_URL } from "../config";
+import LivenessCheck from "./LivenessCheck";
 
 export default function EmployeeScanner() {
   const navigate = useNavigate();
@@ -29,6 +30,15 @@ export default function EmployeeScanner() {
   const [employee, setEmployee] = useState(null);
   const [zone, setZone] = useState("Not inside any zone");
   const [scanning, setScanning] = useState(false);
+
+  /*
+  ===========================================
+     🔐 LIVENESS STATE
+     pendingZone holds the zone name AFTER
+     QR scan but BEFORE liveness verification
+  ===========================================
+  */
+  const [pendingZone, setPendingZone] = useState(null);
 
   /*
   ===========================================
@@ -164,22 +174,15 @@ export default function EmployeeScanner() {
             return; // Keep scanning on soft fail? usually stop
           }
 
-          // SEND TO SERVER
-          const targetId = employee._id || employee.id;
-
-          if (!targetId) {
-            toast.error("Error: Employee ID missing. Please relogin.");
-            return;
-          }
-
-          socketRef.current.emit("join_zone", {
-            id: targetId,
-            employeeId: employee.employeeId,
-            zone: zoneName,
-          });
-
-          // Stop scanning immediately after successful read
+          /*
+          ===========================================
+             🔐 STOP QR → START LIVENESS CHECK
+             Instead of immediately joining the zone,
+             store the zone and show the liveness UI.
+          ===========================================
+          */
           await stopScanner();
+          setPendingZone(zoneName);
         }
       );
     } catch (err) {
@@ -187,6 +190,44 @@ export default function EmployeeScanner() {
       setScanning(false);
       toast.error("Failed to access camera");
     }
+  };
+
+  /*
+  ===========================================
+     🔐 LIVENESS SUCCESS HANDLER
+     Called when blink is verified
+  ===========================================
+  */
+  const handleLivenessSuccess = () => {
+    if (!pendingZone || !employee) return;
+
+    // We don't setZone here immediately, we let the socket handle it,
+    // but we can emit the join_zone request.
+    const targetId = employee._id || employee.id;
+
+    if (!targetId) {
+      toast.error("Error: Employee ID missing. Please relogin.");
+      setPendingZone(null);
+      return;
+    }
+
+    socketRef.current.emit("join_zone", {
+      id: targetId,
+      employeeId: employee.employeeId,
+      zone: pendingZone,
+    });
+
+    setPendingZone(null);
+  };
+
+  /*
+  ===========================================
+     🔐 LIVENESS CANCEL HANDLER
+     Returns to the QR scanner
+  ===========================================
+  */
+  const handleLivenessCancel = () => {
+    setPendingZone(null);
   };
 
   /*
@@ -199,6 +240,22 @@ export default function EmployeeScanner() {
       <div className="h-screen flex items-center justify-center text-white">
         Loading employee...
       </div>
+    );
+  }
+
+  /*
+  ===========================================
+     🔐 LIVENESS CHECK UI
+     Shown after QR scan, before zone join
+  ===========================================
+  */
+  if (pendingZone) {
+    return (
+      <LivenessCheck
+        zoneName={pendingZone}
+        onSuccess={handleLivenessSuccess}
+        onCancel={handleLivenessCancel}
+      />
     );
   }
 
