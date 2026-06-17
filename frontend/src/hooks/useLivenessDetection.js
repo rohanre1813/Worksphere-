@@ -88,14 +88,21 @@ export default function useLivenessDetection() {
     }
   }, [modelsLoaded]);
 
+  const [debugEAR, setDebugEAR] = useState("EAR: --");
+  const isDetecting = useRef(false);
+
   /*
   ====================================================
-     PROCESS A SINGLE FRAME (called at 10 FPS)
+     PROCESS A SINGLE FRAME
   ====================================================
   */
   const processFrame = useCallback(async () => {
+    if (!isDetecting.current) return;
     const video = videoRef.current;
-    if (!video || video.readyState < 2 || blinkDetected.current) return;
+    if (!video || video.readyState < 2 || blinkDetected.current) {
+      if (isDetecting.current) setTimeout(processFrame, DETECTION_INTERVAL_MS);
+      return;
+    }
 
     try {
       const detection = await faceapi
@@ -104,34 +111,42 @@ export default function useLivenessDetection() {
 
       if (!detection) {
         setStatus("no_face");
+        setDebugEAR("EAR: No face");
         closedFrameCount.current = 0;
-        return;
-      }
-
-      setStatus("waiting_blink");
-
-      // Extract eye landmark points
-      // Left eye: landmarks 36-41, Right eye: landmarks 42-47
-      const landmarks = detection.landmarks;
-      const leftEye = landmarks.getLeftEye();   // 6 points
-      const rightEye = landmarks.getRightEye(); // 6 points
-
-      const leftEAR = getEAR(leftEye);
-      const rightEAR = getEAR(rightEye);
-      const avgEAR = (leftEAR + rightEAR) / 2.0;
-
-      if (avgEAR < EAR_THRESHOLD) {
-        closedFrameCount.current += 1;
       } else {
-        // Eyes opened again after being closed
-        if (closedFrameCount.current >= CONSEC_FRAMES_REQUIRED) {
-          blinkDetected.current = true;
-          setStatus("passed");
+        setStatus("waiting_blink");
+
+        const landmarks = detection.landmarks;
+        const leftEye = landmarks.getLeftEye();
+        const rightEye = landmarks.getRightEye();
+
+        const leftEAR = getEAR(leftEye);
+        const rightEAR = getEAR(rightEye);
+        const avgEAR = (leftEAR + rightEAR) / 2.0;
+        
+        setDebugEAR(`EAR: ${avgEAR.toFixed(3)}`);
+
+        if (avgEAR < EAR_THRESHOLD) {
+          closedFrameCount.current += 1;
+        } else {
+          if (closedFrameCount.current >= CONSEC_FRAMES_REQUIRED) {
+            blinkDetected.current = true;
+            setStatus("passed");
+            isDetecting.current = false;
+            return;
+          }
+          closedFrameCount.current = 0;
         }
-        closedFrameCount.current = 0;
       }
     } catch (err) {
       console.error("Frame processing error:", err);
+      // Don't crash entirely on one frame error, but log it
+      setDebugEAR(`Err: ${err.message}`);
+    }
+
+    // Schedule next frame
+    if (isDetecting.current) {
+      setTimeout(processFrame, DETECTION_INTERVAL_MS);
     }
   }, []);
 
@@ -141,21 +156,18 @@ export default function useLivenessDetection() {
   ====================================================
   */
   const startDetection = useCallback(async () => {
-    // 1. Check WebGL
     setStatus("checking_webgl");
     if (!checkWebGL()) {
       setStatus("unsupported");
       return false;
     }
 
-    // 2. Load models
     const loaded = await loadModels();
     if (!loaded) return false;
 
-    // 3. Open front camera
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "user", width: 320, height: 240 },
+        video: { facingMode: "user" },
       });
       streamRef.current = stream;
 
@@ -176,15 +188,13 @@ export default function useLivenessDetection() {
       return false;
     }
 
-    // 4. Reset state
     closedFrameCount.current = 0;
     blinkDetected.current = false;
     setStatus("no_face");
-
-    // 5. Start 10 FPS detection loop
-    intervalRef.current = setInterval(() => {
-      processFrame();
-    }, DETECTION_INTERVAL_MS);
+    
+    // Start recursive detection loop
+    isDetecting.current = true;
+    processFrame();
 
     return true;
   }, [checkWebGL, loadModels, processFrame]);
@@ -195,10 +205,7 @@ export default function useLivenessDetection() {
   ====================================================
   */
   const stopDetection = useCallback(() => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
+    isDetecting.current = false;
 
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => track.stop());
@@ -223,6 +230,7 @@ export default function useLivenessDetection() {
   return {
     status,
     errorMsg,
+    debugEAR,
     videoRef,
     startDetection,
     stopDetection,

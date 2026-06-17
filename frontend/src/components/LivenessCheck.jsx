@@ -19,7 +19,7 @@ import useLivenessDetection from "../hooks/useLivenessDetection";
 */
 
 export default function LivenessCheck({ onSuccess, onCancel, zoneName }) {
-  const { status, errorMsg, videoRef, startDetection, stopDetection } =
+  const { status, errorMsg, debugEAR, videoRef, startDetection, stopDetection } =
     useLivenessDetection();
 
   /*
@@ -197,6 +197,11 @@ export default function LivenessCheck({ onSuccess, onCancel, zoneName }) {
           <span style={{ color: statusInfo.color, fontWeight: 600 }}>
             {statusInfo.text}
           </span>
+        </div>
+
+        {/* Debug EAR */}
+        <div style={{ fontSize: "12px", color: "#666", textAlign: "center", fontFamily: "monospace" }}>
+          {debugEAR}
         </div>
 
         {/* Cancel Button */}
