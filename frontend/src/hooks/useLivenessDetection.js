@@ -41,6 +41,7 @@ export default function useLivenessDetection() {
   const blinkDetected = useRef(false);
 
   const [status, setStatus] = useState("idle");
+  const [errorMsg, setErrorMsg] = useState("");
   // idle | checking_webgl | loading_models | no_face | waiting_blink | passed | unsupported | error
 
   const [modelsLoaded, setModelsLoaded] = useState(false);
@@ -81,6 +82,7 @@ export default function useLivenessDetection() {
       return true;
     } catch (err) {
       console.error("Failed to load face-api models:", err);
+      setErrorMsg(`Model error: ${err.message}`);
       setStatus("error");
       return false;
     }
@@ -159,10 +161,17 @@ export default function useLivenessDetection() {
 
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        await videoRef.current.play();
+        videoRef.current.onloadedmetadata = () => {
+          videoRef.current.play().catch(e => {
+            console.error("Play error:", e);
+            setErrorMsg(`Play error: ${e.message}`);
+            setStatus("error");
+          });
+        };
       }
     } catch (err) {
       console.error("Camera access error:", err);
+      setErrorMsg(`Camera error: ${err.name} - ${err.message}`);
       setStatus("error");
       return false;
     }
@@ -213,6 +222,7 @@ export default function useLivenessDetection() {
 
   return {
     status,
+    errorMsg,
     videoRef,
     startDetection,
     stopDetection,

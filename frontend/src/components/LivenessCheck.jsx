@@ -19,7 +19,7 @@ import useLivenessDetection from "../hooks/useLivenessDetection";
 */
 
 export default function LivenessCheck({ onSuccess, onCancel, zoneName }) {
-  const { status, videoRef, startDetection, stopDetection } =
+  const { status, errorMsg, videoRef, startDetection, stopDetection } =
     useLivenessDetection();
 
   /*
@@ -109,18 +109,17 @@ export default function LivenessCheck({ onSuccess, onCancel, zoneName }) {
 
   /*
   ====================================================
-     UNSUPPORTED DEVICE UI
+     ERROR / UNSUPPORTED DEVICE UI
   ====================================================
   */
-  if (status === "unsupported") {
+  if (status === "unsupported" || status === "error") {
     return (
       <div style={styles.container}>
         <div style={styles.card}>
-          <div style={{ fontSize: "48px", marginBottom: "16px" }}>⚠️</div>
-          <h2 style={styles.title}>Device Not Supported</h2>
-          <p style={styles.subtitle}>
-            Your device does not support hardware-accelerated face detection
-            (WebGL). Please see the manager for manual check-in.
+          <div style={{ fontSize: "48px", marginBottom: "16px" }}>{status === "error" ? "❌" : "⚠️"}</div>
+          <h2 style={styles.title}>{status === "error" ? "Something went wrong" : "Device Not Supported"}</h2>
+          <p style={{...styles.subtitle, color: status === "error" ? "#ef4444" : "#555"}}>
+            {status === "error" ? errorMsg : "Your device does not support hardware-accelerated face detection (WebGL). Please see the manager for manual check-in."}
           </p>
           <button onClick={onCancel} style={styles.cancelBtn}>
             Go Back
