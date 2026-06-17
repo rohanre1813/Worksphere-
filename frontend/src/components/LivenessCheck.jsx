@@ -18,9 +18,9 @@ import useLivenessDetection from "../hooks/useLivenessDetection";
 ====================================================
 */
 
-export default function LivenessCheck({ onSuccess, onCancel, zoneName }) {
+export default function LivenessCheck({ onSuccess, onCancel, zoneName, employeeDescriptor }) {
   const { status, errorMsg, debugEAR, videoRef, startDetection, stopDetection } =
-    useLivenessDetection();
+    useLivenessDetection(employeeDescriptor);
 
   /*
   ====================================================

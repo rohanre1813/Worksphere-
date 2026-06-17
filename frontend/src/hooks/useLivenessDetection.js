@@ -33,7 +33,7 @@ const EAR_THRESHOLD = 0.25;       // Below this = eyes closed
 const CONSEC_FRAMES_REQUIRED = 2; // Must be below threshold for 2 frames
 const DETECTION_INTERVAL_MS = 100; // 10 FPS
 
-export default function useLivenessDetection() {
+export default function useLivenessDetection(storedDescriptor) {
   const videoRef = useRef(null);
   const streamRef = useRef(null);
   const intervalRef = useRef(null);
@@ -77,6 +77,7 @@ export default function useLivenessDetection() {
       await Promise.all([
         faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
         faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+        faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
       ]);
       setModelsLoaded(true);
       return true;
@@ -107,7 +108,8 @@ export default function useLivenessDetection() {
     try {
       const detection = await faceapi
         .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
-        .withFaceLandmarks();
+        .withFaceLandmarks()
+        .withFaceDescriptor();
 
       if (!detection) {
         setStatus("no_face");
@@ -130,6 +132,22 @@ export default function useLivenessDetection() {
           closedFrameCount.current += 1;
         } else {
           if (closedFrameCount.current >= CONSEC_FRAMES_REQUIRED) {
+            // Liveness passed, now check identity if enrolled
+            if (storedDescriptor && storedDescriptor.length === 128) {
+              const distance = faceapi.euclideanDistance(
+                detection.descriptor,
+                new Float32Array(storedDescriptor)
+              );
+              setDebugEAR(`Dist: ${distance.toFixed(3)}`);
+              
+              if (distance > 0.55) {
+                setErrorMsg(`Face does not match account. (Score: ${distance.toFixed(2)})`);
+                setStatus("error");
+                isDetecting.current = false;
+                return;
+              }
+            }
+
             blinkDetected.current = true;
             setStatus("passed");
             isDetecting.current = false;

@@ -3,7 +3,7 @@ import Employee from "../models/Employee.js";
 // ---------------- ADD EMPLOYEE ----------------
 export const addEmployee = async (req, res) => {
   try {
-    const { employeeId, name, email, phoneNumber, role, password } = req.body;
+    const { employeeId, name, email, phoneNumber, role, password, faceDescriptor } = req.body;
 
     if (!employeeId || !name || !email || !phoneNumber || !role || !password) {
       return res.status(400).json({ message: "All fields required" });
@@ -36,6 +36,7 @@ export const addEmployee = async (req, res) => {
       role,
       password, // plaintext, will be hashed by schema
       admin: req.user.id,
+      faceDescriptor,
     });
 
     res.status(201).json({

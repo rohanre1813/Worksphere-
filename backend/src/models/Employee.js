@@ -55,6 +55,15 @@ const employeeSchema = new mongoose.Schema(
       type: String,
       default: "Not inside any zone",
     },
+
+    /*
+      🔥 FACE RECOGNITION
+      Stores the 128-d float array representation of the face
+    */
+    faceDescriptor: {
+      type: [Number],
+      required: false,
+    },
   },
   { timestamps: true }
 );

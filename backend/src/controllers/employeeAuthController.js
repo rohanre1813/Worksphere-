@@ -52,7 +52,7 @@ export const employeeLogin = async (req, res) => {
 export const getMe = async (req, res) => {
   try {
     const employee = await Employee.findById(req.user.id).select(
-      "employeeId name email role currentZone admin" // ✅ Select Admin ID
+      "employeeId name email role currentZone admin faceDescriptor" // ✅ Select Admin ID and faceDescriptor
     );
 
     if (!employee) {

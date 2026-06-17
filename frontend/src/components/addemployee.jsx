@@ -3,6 +3,7 @@ import { Eye, EyeOff, Plus, Pencil, X, Trash2, Search } from "lucide-react";
 import { toast } from 'react-hot-toast'
 import axios from "axios";
 import { API_BASE_URL } from "../config";
+import * as faceapi from "face-api.js";
 
 export default function EmployeeList() {
   const [showPassword, setShowPassword] = useState(false);
@@ -18,7 +19,12 @@ export default function EmployeeList() {
     phoneNumber: "",
     role: "",
     password: "",
+    faceDescriptor: null,
   });
+
+  const [modelsLoaded, setModelsLoaded] = useState(false);
+  const [photoError, setPhotoError] = useState("");
+  const [extractingFace, setExtractingFace] = useState(false);
 
   const token = localStorage.getItem("token");
 
@@ -39,11 +45,57 @@ export default function EmployeeList() {
 
   useEffect(() => {
     if (token) fetchEmployees();
+
+    const loadModels = async () => {
+      try {
+        const MODEL_URL = "/models";
+        await Promise.all([
+          faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+          faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+          faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
+        ]);
+        setModelsLoaded(true);
+      } catch(err) {
+        console.error("Models failed to load", err);
+      }
+    };
+    loadModels();
   }, [token]);
 
   /* ---------------- HANDLERS ---------------- */
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
+
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) {
+      setForm(f => ({...f, faceDescriptor: null}));
+      return;
+    }
+
+    setExtractingFace(true);
+    setPhotoError("");
+    try {
+      const img = await faceapi.bufferToImage(file);
+      const detection = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
+
+      if (!detection) {
+        setPhotoError("No face detected or image too unclear. Please upload a clear headshot.");
+        setForm(f => ({...f, faceDescriptor: null}));
+      } else {
+        setPhotoError("");
+        // Convert Float32Array to standard array for JSON payload
+        setForm(f => ({...f, faceDescriptor: Array.from(detection.descriptor)}));
+        toast.success("Face mapped successfully!");
+      }
+    } catch(err) {
+      setPhotoError("Error processing photo.");
+      console.error("Face map error:", err);
+      setForm(f => ({...f, faceDescriptor: null}));
+    } finally {
+      setExtractingFace(false);
+    }
+  };
 
   const handleAddEmployee = async () => {
     if (Object.values(form).some((v) => !v)) {
@@ -60,7 +112,7 @@ export default function EmployeeList() {
       });
 
       setEmployees((prev) => [...prev, res.data.employee]);
-      setForm({ employeeId: "", name: "", email: "", phoneNumber: "", role: "", password: "" });
+      setForm({ employeeId: "", name: "", email: "", phoneNumber: "", role: "", password: "", faceDescriptor: null });
     } catch (err) {
       toast.error(err.response?.data?.message || "Server error")
     }
@@ -138,6 +190,22 @@ export default function EmployeeList() {
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
+            </div>
+
+            {/* Photo Upload for Enrollment */}
+            <div className="relative">
+              <label className="text-sm">Employee Photo (For Face ID)</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handlePhotoUpload}
+                disabled={!modelsLoaded || extractingFace}
+                className="w-full mt-1 border rounded-xl px-4 py-2 bg-transparent text-sm"
+              />
+              {extractingFace && <p className="text-xs text-blue-500 mt-1">Scanning face...</p>}
+              {photoError && <p className="text-xs text-red-500 mt-1">{photoError}</p>}
+              {form.faceDescriptor && <p className="text-xs text-green-500 mt-1">✓ Face mapped & ready</p>}
+              {!modelsLoaded && <p className="text-xs text-gray-500 mt-1">Loading AI models...</p>}
             </div>
           </div>
 

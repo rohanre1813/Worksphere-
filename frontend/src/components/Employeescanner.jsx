@@ -253,6 +253,7 @@ export default function EmployeeScanner() {
     return (
       <LivenessCheck
         zoneName={pendingZone}
+        employeeDescriptor={employee.faceDescriptor}
         onSuccess={handleLivenessSuccess}
         onCancel={handleLivenessCancel}
       />
