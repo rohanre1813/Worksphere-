@@ -2,6 +2,7 @@ import { Pencil, X, MapPin, Bell, CalendarCheck, User } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AnalyticsSummary from "./AnalyticsSummary";
+import AttendanceTable from "./AttendanceTable";
 
 export default function EmployeeDashboard() {
   const [employee, setEmployee] = useState(null);
@@ -52,6 +53,7 @@ export default function EmployeeDashboard() {
           </div>
 
           <AnalyticsSummary employeeId={employee.id} />
+          <AttendanceTable employeeId={employee.id} />
         </div>
 
 

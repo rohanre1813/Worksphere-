@@ -29,8 +29,8 @@ function getEAR(eyePoints) {
   return (vertical1 + vertical2) / (2.0 * horizontal);
 }
 
-const EAR_THRESHOLD = 0.25;       // Below this = eyes closed
-const CONSEC_FRAMES_REQUIRED = 2; // Must be below threshold for 2 frames
+const EAR_THRESHOLD = 0.28;       // Below this = eyes closed
+const CONSEC_FRAMES_REQUIRED = 1; // Must be below threshold for 1 frame
 const DETECTION_INTERVAL_MS = 100; // 10 FPS
 
 export default function useLivenessDetection(storedDescriptor) {
