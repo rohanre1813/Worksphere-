@@ -4,6 +4,7 @@ import { User, MapPin, Mail, Briefcase, ArrowLeft } from "lucide-react";
 import axios from "axios";
 import { API_BASE_URL } from "../config";
 import AnalyticsSummary from "./AnalyticsSummary";
+import AttendanceTable from "./AttendanceTable";
 
 export default function EmployeeDetails() {
   const { id } = useParams();
@@ -127,6 +128,7 @@ export default function EmployeeDetails() {
             </div>
 
             <AnalyticsSummary employeeId={employee._id} />
+            <AttendanceTable employeeId={employee._id} />
           </div>
         </div>
 

@@ -98,3 +98,45 @@ export const deleteOfficeStats = async (req, res) => {
     res.status(500).json({ message: "Server Error" });
   }
 };
+
+export const getEmployeeAttendance = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const isSelf = req.user.id === id;
+    const isAdmin = req.user.role === "admin";
+
+    // Security Check
+    if (!isAdmin && !isSelf) {
+      return res.status(403).json({ message: "Unauthorized. You can only view your own attendance." });
+    }
+
+    if (isAdmin) {
+      const target = await Employee.findById(id).select("admin");
+      if (!target || target.admin.toString() !== req.user.id) {
+        return res.status(403).json({ message: "Unauthorized. Employee not in your office." });
+      }
+    }
+
+    const attendance = await ZoneLog.aggregate([
+      {
+        $match: {
+          employeeId: new ZoneLog.base.Types.ObjectId(id)
+        }
+      },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$entryTime", timezone: "Asia/Kolkata" } },
+          firstIn: { $min: "$entryTime" },
+          lastOut: { $max: "$exitTime" }
+        }
+      },
+      { $sort: { _id: -1 } } // Sort by date descending
+    ]);
+
+    res.json(attendance);
+  } catch (err) {
+    console.error("Attendance Error:", err);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
