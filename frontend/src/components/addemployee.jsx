@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
-import { Eye, EyeOff, Plus, Pencil, X, Trash2, Search } from "lucide-react";
+import { Eye, EyeOff, Plus, Pencil, X, Trash2, Search, User } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { toast } from 'react-hot-toast'
 import axios from "axios";
 import { API_BASE_URL } from "../config";
 import * as faceapi from "face-api.js";
 
 export default function EmployeeList() {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -265,6 +267,13 @@ export default function EmployeeList() {
                         <td>{emp.role}</td>
                         <td>••••••</td>
                         <td className="flex gap-2">
+                          <button
+                            onClick={() => navigate(`/admin/employee-details/${emp._id}`)}
+                            className="bg-blue-500 p-1 rounded text-white"
+                            title="View Profile"
+                          >
+                            <User size={14} />
+                          </button>
                           <button
                             onClick={() =>
                               setEditEmployee({ ...emp, password: "" })
