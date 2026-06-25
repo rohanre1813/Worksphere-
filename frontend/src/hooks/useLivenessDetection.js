@@ -184,6 +184,17 @@ export default function useLivenessDetection(storedDescriptor) {
     if (!loaded) return false;
 
     try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const hasFakeCamera = devices.some(d => 
+        d.label.toLowerCase().includes("virtual") || 
+        d.label.toLowerCase().includes("obs")
+      );
+      if (hasFakeCamera) {
+        setErrorMsg("Virtual Cameras are not allowed for security reasons.");
+        setStatus("error");
+        return false;
+      }
+
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "user" },
       });
