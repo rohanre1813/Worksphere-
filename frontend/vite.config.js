@@ -7,18 +7,6 @@ import { viteObfuscateFile } from 'vite-plugin-obfuscator'
 export default defineConfig({
   plugins: [
     react(), 
-    tailwindcss(),
-    viteObfuscateFile({
-      compact: true,
-      controlFlowFlattening: true,
-      deadCodeInjection: false,
-      debugProtection: false,
-      disableConsoleOutput: true,
-      identifierNamesGenerator: 'hexadecimal',
-      log: false,
-      stringArray: true,
-      stringArrayEncoding: ['base64'],
-      stringArrayThreshold: 0.75
-    })
+    tailwindcss()
   ],
 })
