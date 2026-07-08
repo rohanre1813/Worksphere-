@@ -108,7 +108,19 @@ export const getEmployeeAttendance = async (req, res) => {
 
     // Security Check
     if (!isAdmin && !isSelf) {
-      return res.status(403).json({ message: "Unauthorized. You can only view your own attendance." });
+      // Check if they are co-workers (same admin)
+      const requester = await Employee.findById(req.user.id).select("admin");
+      const target = await Employee.findById(id).select("admin");
+
+      if (
+        !requester ||
+        !target ||
+        !requester.admin ||
+        !target.admin ||
+        requester.admin.toString() !== target.admin.toString()
+      ) {
+        return res.status(403).json({ message: "Unauthorized. You can only view attendance of your co-workers." });
+      }
     }
 
     if (isAdmin) {
