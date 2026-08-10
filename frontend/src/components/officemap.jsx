@@ -199,7 +199,7 @@ export default function OfficeMap() {
         {/* ================= EMPLOYEE DOTS ================= */}
         {positionedEmployees.map((emp) => (
           <motion.div
-            key={emp.employeeId}
+            key={emp._id}
             className="absolute"
             initial={emp.pos}
             animate={emp.pos}
@@ -209,9 +209,9 @@ export default function OfficeMap() {
             <div
               onClick={() => {
                 if (location.pathname.includes("/employee/")) {
-                  navigate(`/employee/details/${emp.employeeId}`);
+                  navigate(`/employee/details/${emp._id}`);
                 } else {
-                  navigate(`/admin/employee-details/${emp.employeeId}`);
+                  navigate(`/admin/employee-details/${emp._id}`);
                 }
               }}
               className="flex flex-col items-center cursor-pointer hover:scale-150 transition-transform -translate-x-1/2 -translate-y-1/2"

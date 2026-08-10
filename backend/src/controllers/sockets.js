@@ -12,6 +12,7 @@ export default function initSocket(io) {
         .select("employeeId name email currentZone");
 
       const formatted = employees.map(e => ({
+        _id: e._id,
         employeeId: e.employeeId,
         email: e.email,
         name: e.name,
