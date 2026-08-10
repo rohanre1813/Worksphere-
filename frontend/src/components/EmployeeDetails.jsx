@@ -72,7 +72,7 @@ export default function EmployeeDetails() {
   return (
     <div className="min-h-screen p-4 md:p-10 flex flex-col items-center">
 
-      <div className="w-full max-w-2xl bg-zinc-900/50 backdrop-blur-xl border border-yellow-400/30 rounded-3xl p-8 shadow-2xl relative overflow-hidden">
+      <div className="w-full max-w-2xl bg-zinc-900/50 backdrop-blur-xl border border-yellow-400/30 rounded-3xl p-5 md:p-8 shadow-2xl relative overflow-hidden">
 
         {/* Background Glow */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-yellow-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
@@ -84,7 +84,7 @@ export default function EmployeeDetails() {
           <ArrowLeft size={20} /> Back to Map
         </button>
 
-        <div className="flex flex-col md:flex-row items-center md:items-start gap-8 relative z-10">
+        <div className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-8 relative z-10 w-full">
 
           {/* Avatar Placeholder */}
           <div className="w-32 h-32 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center shadow-lg border-4 border-black/50">

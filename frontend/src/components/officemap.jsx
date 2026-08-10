@@ -153,13 +153,14 @@ export default function OfficeMap() {
 
     socketRef.current = socket;
 
-    socket.emit("join_room", adminId);
+    socket.on("connect", () => {
+      socket.emit("join_room", adminId);
+      socket.emit("request_employees", adminId);
+    });
 
     socket.on("employees_update", (data) => {
       setEmployees(data);
     });
-
-    socket.emit("request_employees", adminId);
 
     return () => socket.disconnect();
   }, []);
@@ -203,7 +204,7 @@ export default function OfficeMap() {
             className="absolute"
             initial={emp.pos}
             animate={emp.pos}
-            transition={{ duration: 2 }}
+            transition={{ type: "spring", stiffness: 200, damping: 20 }}
           >
             {/* Inner wrapper: centers content on the position point */}
             <div
